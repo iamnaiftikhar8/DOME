@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import './Login.css';
-
-// Import the logo image
 import domeLogo from '../../assets/images/dome-logo.png';
 
 const Login = ({ onLogin }) => {
@@ -13,56 +11,72 @@ const Login = ({ onLogin }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
 
-  // Dummy credentials
-  const dummyCredentials = {
-    email: 'admin@dome.com',
-    password: 'password123'
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (error) setError('');
+  };
+
+  const handleRememberMeChange = (e) => {
+    setRememberMe(e.target.checked);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
-    
-    // Simulate API call
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
       
-      // Check dummy credentials
-      if (formData.email === dummyCredentials.email && formData.password === dummyCredentials.password) {
-        // Login successful
+      console.log('Login response:', data); 
+
+      if (response.ok && data.operation === 'success') {
         if (rememberMe) {
-          // Save to localStorage if remember me is checked
           localStorage.setItem('rememberMe', 'true');
           localStorage.setItem('userEmail', formData.email);
         }
-        onLogin(); // Call the parent function to switch to Home page
+        
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        onLogin(data.user, data.token);
       } else {
-        setError('Invalid email or password. Use: admin@dome.com / password123');
+        setError(data.message || 'Login failed. Please try again.');
       }
       
     } catch (error) {
-      setError('Login failed. Please try again.');
+      console.error('Login error:', error);
+      setError('Network error. Please check if the server is running.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleForgotPassword = () => {
-    alert('Password reset functionality would go here!\n\nDummy Credentials:\nEmail: admin@dome.com\nPassword: password123');
+    alert('Please contact your administrator to reset your password.');
   };
 
-  // Check if remember me was previously set
   React.useEffect(() => {
     const remembered = localStorage.getItem('rememberMe');
     if (remembered === 'true') {
@@ -124,14 +138,33 @@ const Login = ({ onLogin }) => {
             />
           </div>
 
+          {/* Remember Me & Forgot Password */}
+          <div className="form-options">
+            <label className="remember-me">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={handleRememberMeChange}
+                disabled={isLoading}
+              />
+              Remember me
+            </label>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="forgot-password"
+              disabled={isLoading}
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           {/* Error Message */}
           {error && (
             <div className="error-message">
               {error}
             </div>
           )}
-
-      
 
           {/* Login Button */}
           <button
@@ -148,8 +181,6 @@ const Login = ({ onLogin }) => {
               'Login'
             )}
           </button>
-
-        
         </form>
       </div>
     </div>
