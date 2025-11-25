@@ -6,8 +6,10 @@ import {
   FaRegCompass,
 } from 'react-icons/fa';
 import './Home.css';
-// Import the logo image
 import domeLogo from '../../assets/images/Logo.png';
+
+// Import HR component
+import HR from '../../components/HR/HR';
 
 const Home = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('home');
@@ -21,11 +23,7 @@ const Home = ({ onLogout }) => {
           </div>
         );
       case 'human-resource':
-        return (
-          <div className="content-area">
-            <h2>Human Resources</h2>
-          </div>
-        );
+        return <HR />; // Integrated HR component
       case 'supply-chain':
         return (
           <div className="content-area">
@@ -57,6 +55,10 @@ const Home = ({ onLogout }) => {
             alt="DOME - Digital Office Management Engine" 
             className="sidebar-logo"
           />
+          <div className="header-text">
+            <div className="dome-title">DOME</div>
+            <div className="dome-subtitle">Digital Office Management Engine</div>
+          </div>
         </div>
         
         <div className="sidebar-content">
@@ -89,8 +91,6 @@ const Home = ({ onLogout }) => {
             <span>Logistics</span>
           </div>
         </div>
-        
-       
       </div>
 
       {/* Main Content */}
