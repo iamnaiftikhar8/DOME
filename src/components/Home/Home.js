@@ -4,15 +4,33 @@ import {
   FaRegUser, 
   FaShippingFast,
   FaRegCompass,
+  FaSignOutAlt
 } from 'react-icons/fa';
+import HR from '../HR/HR';
+import EmployeeProfile from '../EmployeeProfile/EmployeeProfile';
 import './Home.css';
 import domeLogo from '../../assets/images/Logo.png';
 
-// Import HR component
-import HR from '../../components/HR/HR';
-
 const Home = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('home');
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  const handleViewProfile = (employee) => {
+    setSelectedEmployee(employee);
+    setActiveTab('employee-profile');
+  };
+
+  const handleBackToHR = () => {
+    setSelectedEmployee(null);
+    setActiveTab('human-resource');
+  };
+
+  const handleLogout = () => {
+    // You can add confirmation dialog here if needed
+    if (window.confirm('Are you sure you want to logout?')) {
+      onLogout();
+    }
+  };
 
   const renderContent = () => {
     switch(activeTab) {
@@ -20,26 +38,32 @@ const Home = ({ onLogout }) => {
         return (
           <div className="content-area">
             <h2>Home</h2>
+            <div className="module-text">Welcome to DOME Dashboard</div>
           </div>
         );
       case 'human-resource':
-        return <HR />; // Integrated HR component
+        return <HR onViewProfile={handleViewProfile} />;
+      case 'employee-profile':
+        return <EmployeeProfile employee={selectedEmployee} onBack={handleBackToHR} />;
       case 'supply-chain':
         return (
           <div className="content-area">
             <h2>Supply Chain</h2>
+            <div className="module-text">Supply Chain Management System</div>
           </div>
         );
       case 'logistics':
         return (
           <div className="content-area">
             <h2>Logistics</h2>
+            <div className="module-text">Logistics Management System</div>
           </div>
         );
       default:
         return (
           <div className="content-area">
             <h2>Home</h2>
+            <div className="module-text">Welcome to DOME Dashboard</div>
           </div>
         );
     }
@@ -52,7 +76,7 @@ const Home = ({ onLogout }) => {
         <div className="sidebar-header">
           <img 
             src={domeLogo} 
-            alt="DOME - Digital Office Management Engine" 
+            alt="DOME" 
             className="sidebar-logo"
           />
           <div className="header-text">
@@ -80,7 +104,7 @@ const Home = ({ onLogout }) => {
             className={`nav-item ${activeTab === 'supply-chain' ? 'active' : ''}`}
             onClick={() => setActiveTab('supply-chain')}
           >
-            < FaShippingFast className="nav-icon" />
+            <FaShippingFast className="nav-icon" />
             <span>Supply Chain</span>
           </div>
           <div 
@@ -89,6 +113,13 @@ const Home = ({ onLogout }) => {
           >
             <FaRegCompass className="nav-icon" />
             <span>Logistics</span>
+          </div>
+        </div>
+        
+        <div className="user-section">
+          <div className="logout-button" onClick={handleLogout}>
+            <FaSignOutAlt className="logout-icon" />
+            <span>Logout</span>
           </div>
         </div>
       </div>

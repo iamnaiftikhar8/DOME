@@ -145,7 +145,83 @@
   font-weight: 400;
   text-align: left; 
 }
+/* Logout Button Styles */
+.user-section {
+  padding: 20px 25px;
+  border-top: 1px solid #444;
+  background-color: #2c2c2c;
+}
 
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: transparent;
+  color: #e7e9ec;
+  border: 2px solid #444;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.logout-button:hover {
+  background-color: #3a3a3a;
+  color: #ffffff;
+  border-color: #0586cb;
+  transform: translateY(-1px);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+}
+
+.logout-icon {
+  font-size: 18px;
+  width: 20px;
+}
+
+/* Responsive Design for Logout Button */
+@media (max-width: 768px) {
+  .user-section {
+    padding: 15px 20px;
+  }
+  
+  .logout-button {
+    padding: 15px 10px;
+    font-size: 14px;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    border-radius: 10px;
+  }
+  
+  .logout-icon {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-section {
+    padding: 12px 15px;
+  }
+  
+  .logout-button {
+    padding: 12px 5px;
+    font-size: 12px;
+    gap: 4px;
+    border-radius: 8px;
+  }
+  
+  .logout-icon {
+    font-size: 14px;
+  }
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .home-container {

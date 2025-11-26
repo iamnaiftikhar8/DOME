@@ -4,7 +4,7 @@
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
   width: 100%;
-  min-width: 1200px;
+  /* Remove min-width to allow natural width */
 }
 
 /* Header Styles */
@@ -151,20 +151,23 @@
   border-color: #0586cb;
 }
 
-/* Table Styles */
+/* Table Styles - FIXED */
 .table-container {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow-x: auto; /* Horizontal scrolling for table */
   border: 1px solid #e0e0e0;
+  width: 100%;
 }
 
 .employees-table {
-  width: 100%;
+  width: auto; /* Allow table to expand naturally */
+  min-width: 100%; /* Ensure it takes full width of container */
   border-collapse: collapse;
   font-size: 14px;
   background-color: #ffffff;
+  table-layout: auto; /* Allow columns to size based on content */
 }
 
 .employees-table thead {
@@ -180,8 +183,24 @@
   white-space: nowrap;
   position: sticky;
   top: 0;
-  background-color: #e7e9ec; 
+  background-color: #e7e9ec;
+  min-width: 100px; /* Minimum width for each column */
 }
+
+/* Set specific min-widths for columns to prevent overlapping */
+.employees-table th:nth-child(1) { min-width: 80px; } /* EmpID */
+.employees-table th:nth-child(2) { min-width: 80px; } /* Status */
+.employees-table th:nth-child(3) { min-width: 150px; } /* Name */
+.employees-table th:nth-child(4) { min-width: 120px; } /* Report To */
+.employees-table th:nth-child(5) { min-width: 100px; } /* Division */
+.employees-table th:nth-child(6) { min-width: 140px; } /* Department */
+.employees-table th:nth-child(7) { min-width: 160px; } /* Designation */
+.employees-table th:nth-child(8) { min-width: 80px; } /* Grade */
+.employees-table th:nth-child(9) { min-width: 80px; } /* Zone */
+.employees-table th:nth-child(10) { min-width: 120px; } /* Branch */
+.employees-table th:nth-child(11) { min-width: 120px; } /* Mobile */
+.employees-table th:nth-child(12) { min-width: 200px; } /* Email */
+.employees-table th:nth-child(13) { min-width: 80px; } /* Display */
 
 .employees-table tbody tr {
   border-bottom: 1px solid #e0e0e0;
@@ -198,11 +217,16 @@
   color: #2c2c2c;
   border-bottom: 1px solid #f0f0f0;
   background-color: #ffffff;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Show ... for overflow text */
+  max-width: 300px; /* Maximum width for cells */
 }
 
 /* Display Cell with Search Icon */
 .display-cell {
   text-align: center;
+  min-width: 80px;
 }
 
 .search-icon-btn {
@@ -216,6 +240,7 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease;
+  margin: 0 auto;
 }
 
 .search-icon-btn:hover {
@@ -241,15 +266,10 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  color: #ffffff;
-}
-
-.status-badge.active {
-  background-color: #28a745;
-}
-
-.status-badge.inactive {
-  background-color: #dc3545;
+  color: #2c2c2c; /* Change text color to dark gray */
+  display: inline-block;
+  white-space: nowrap;
+  background-color: transparent; 
 }
 
 /* Pagination Styles */
@@ -302,14 +322,143 @@
   outline: none;
   border-color: #0586cb;
 }
+/* Loading State Styles */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0586cb;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Simple Active Users Styles */
+.user-stats {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.active-users {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.active-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.users-icon {
+  font-size: 16px;
+  color: #29437a;
+}
+
+.active-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.active-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: #29437a;
+  line-height: 1;
+}
+
+/* Header Layout */
+.hr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.header-main {
+  flex: 1;
+}
+
+.main-title {
+  color: #29437a;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  text-align: left;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hr-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .user-stats {
+    justify-content: flex-start;
+  }
+  
+  .main-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .active-users {
+    padding: 8px 12px;
+    gap: 2px;
+  }
+  
+  .active-header {
+    gap: 6px;
+  }
+  
+  .users-icon {
+    font-size: 15px;
+  }
+  
+  .active-count {
+    font-size: 20px;
+  }
+  
+  .active-label {
+    font-size: 11px;
+  }
+  
+  .main-title {
+    font-size: 24px;
+  }
+}
 /* Responsive Design */
 @media (max-width: 1200px) {
   .table-container {
-    overflow-x: auto;
+    overflow-x: auto; /* Horizontal scroll on smaller screens */
   }
   
   .employees-table {
-    min-width: 1400px;
+    min-width: 1200px; /* Minimum table width for mobile */
   }
 }
 
@@ -335,6 +484,10 @@
   .main-title {
     font-size: 24px;
   }
+  
+  .employees-table {
+    min-width: 1100px; /* Slightly smaller min-width for tablets */
+  }
 }
 
 @media (max-width: 480px) {
@@ -350,5 +503,20 @@
   
   .main-title {
     font-size: 20px;
+  }
+  
+  .employees-table {
+    min-width: 1000px; /* Smaller min-width for mobile */
+  }
+  
+  .search-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .search-box,
+  .filter-box {
+    width: 100%;
+    max-width: 100%;
   }
 }
