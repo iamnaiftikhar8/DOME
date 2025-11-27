@@ -1,199 +1,277 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaUsers } from 'react-icons/fa';
+import { FaUser, FaUsers, FaCalendarAlt, FaChartBar, FaArrowLeft } from 'react-icons/fa';
+import EmployeeProfile from '../EmployeeProfile/EmployeeProfile';
+import EmployeeList from './EmployeeList';
+import LeavesManagement from './Leaves/LeavesManagement';
 import './HR.css';
 
 const HR = ({ onViewProfile }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [entriesPerPage, setEntriesPerPage] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-   
-  // ============ API INTEGRATION ============
-  const [employees, setEmployees] = useState([]); 
+  const [activeSubCategory, setActiveSubCategory] = useState('');
+  const [myProfileData, setMyProfileData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch employees from API
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        // API endpoint
-        const response = await fetch('http://localhost:3001/employees', { 
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+  const hrCategories = [
+    {
+      key: 'my-profile',
+      label: 'My Profile',
+      icon: <FaUser className="category-icon" />,
+      description: 'View and manage your personal profile information'
+    },
+    {
+      key: 'employee-management',
+      label: 'Employee Management',
+      icon: <FaUsers className="category-icon" />,
+      description: 'Manage employee records, view profiles, and update information'
+    },
+    {
+      key: 'leaves-management',
+      label: 'Leaves Management',
+      icon: <FaCalendarAlt className="category-icon" />,
+      description: 'Handle leave requests, approvals, and track employee leaves'
+    },
+    {
+      key: 'hr-reports',
+      label: 'HR Reports',
+      icon: <FaChartBar className="category-icon" />,
+      description: 'Generate and view HR analytics and reports'
+    },
+    {
+      key: 'attendance',
+      label: 'Attendance',
+      icon: <FaChartBar className="category-icon" />,
+      description: 'Track and manage employee attendance records'
+    },
+    {
+      key: 'payroll',
+      label: 'Payroll',
+      icon: <FaChartBar className="category-icon" />,
+      description: 'Process payroll and manage salary information'
+    }
+  ];
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch employees');
-        }
-
-        const data = await response.json();
-        
-        // Handle different API response structures
-        if (Array.isArray(data)) {
-          setEmployees(data);
-        } else if (data.data && Array.isArray(data.data)) {
-          setEmployees(data.data);
-        } else if (data.employees && Array.isArray(data.employees)) {
-          setEmployees(data.employees);
-        } else {
-          setEmployees([]); // Fallback to empty array
-        }
-      } catch (err) {
-        console.error('Error fetching employees:', err);
-        setEmployees([]); // Fallback to empty array on error
+  // Fetch current user's profile data
+  const fetchMyProfile = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user'));
+      
+      if (!token || !user) {
+        throw new Error('User not authenticated');
       }
-    };
 
-    fetchEmployees();
-  }, []); // Empty dependency array = run once on mount
+      const response = await fetch(`http://localhost:5000/api/hr/profile-detailed/${user.userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-  const filteredEmployees = employees.filter(employee => 
-    employee.name && employee.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile data');
+      }
 
-  // Calculate active users
-  const activeUsers = employees.filter(emp => emp.status === 'Active').length;
+      const data = await response.json();
+      
+      if (data.operation === 'success') {
+        // Map API data to employee format
+        const profileData = {
+          empId: data.data.EmpID,
+          name: data.data.FirstName,
+          designation: data.data.DesignationName,
+          department: data.data.DepartmentName,
+          division: data.data.PayrollName,
+          status: data.data.Status,
+          email: data.data.OfficeEmail,
+          mobile: data.data.OfficeMobile,
+          reportTo: data.data.ReportToID,
+          grade: data.data.PositionName,
+          zone: data.data.LocationName,
+          branch: data.data.BranchName,
+          // Include all detailed data for the profile component
+          ...data.data
+        };
+        setMyProfileData(profileData);
+      }
+    } catch (error) {
+      console.error('Error fetching my profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const totalEntries = filteredEmployees.length;
-  const entriesToShow = entriesPerPage ? parseInt(entriesPerPage) : totalEntries;
-  const totalPages = Math.ceil(totalEntries / entriesToShow);
-  
-  const startIndex = (currentPage - 1) * entriesToShow;
-  const endIndex = startIndex + entriesToShow;
-  const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+  const handleCategoryClick = (categoryKey) => {
+    setActiveSubCategory(categoryKey);
+    
+    // If My Profile is clicked, fetch the data
+    if (categoryKey === 'my-profile') {
+      fetchMyProfile();
+    }
+  };
 
-  const handleSearchClick = (employee) => {
+  const handleBackToCategories = () => {
+    setActiveSubCategory('');
+    setMyProfileData(null);
+  };
+
+  const handleEmployeeClick = (employee) => {
     onViewProfile(employee);
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const renderSubCategoryContent = () => {
+    switch (activeSubCategory) {
+      case 'my-profile':
+        if (loading) {
+          return (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading your profile...</p>
+            </div>
+          );
+        }
+        return myProfileData ? (
+          <div className="subcategory-content">
+            <div className="subcategory-header">
+              <button onClick={handleBackToCategories} className="back-button">
+                <FaArrowLeft className="back-icon" />
+                Back to HR Categories
+              </button>
+              <h2>My Profile</h2>
+            </div>
+            <EmployeeProfile employee={myProfileData} onBack={handleBackToCategories} />
+          </div>
+        ) : (
+          <div className="error-message">
+            <p>Unable to load profile data.</p>
+            <button onClick={fetchMyProfile} className="retry-button">
+              Try Again
+            </button>
+          </div>
+        );
+
+      case 'employee-management':
+        return (
+          <div className="subcategory-content">
+            <div className="subcategory-header">
+              <button onClick={handleBackToCategories} className="back-button">
+                <FaArrowLeft className="back-icon" />
+                Back to HR Categories
+              </button>
+              <h2>Employee Management</h2>
+            </div>
+            <EmployeeList onViewProfile={handleEmployeeClick} />
+          </div>
+        );
+
+      case 'leaves-management':
+  return (
+    <div className="subcategory-content">
+      <div className="subcategory-header">
+        <button onClick={handleBackToCategories} className="back-button">
+          <FaArrowLeft className="back-icon" />
+          Back to HR Categories
+        </button>
+        <h2>Leaves Management</h2>
+      </div>
+      <LeavesManagement />
+    </div>
+  );
+
+      case 'hr-reports':
+        return (
+          <div className="subcategory-content">
+            <div className="subcategory-header">
+              <button onClick={handleBackToCategories} className="back-button">
+                <FaArrowLeft className="back-icon" />
+                Back to HR Categories
+              </button>
+              <h2>HR Reports</h2>
+            </div>
+            <div className="module-placeholder">
+              <FaChartBar className="placeholder-icon" />
+              <h3>HR Analytics & Reports</h3>
+              <p>This module is under development. You'll be able to generate:</p>
+              <ul>
+                <li>Employee demographic reports</li>
+                <li>Attendance summaries</li>
+                <li>Turnover analysis</li>
+                <li>Performance metrics</li>
+                <li>Department-wise reports</li>
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 'attendance':
+        return (
+          <div className="subcategory-content">
+            <div className="subcategory-header">
+              <button onClick={handleBackToCategories} className="back-button">
+                <FaArrowLeft className="back-icon" />
+                Back to HR Categories
+              </button>
+              <h2>Attendance Management</h2>
+            </div>
+            <div className="module-placeholder">
+              <FaChartBar className="placeholder-icon" />
+              <h3>Attendance Tracking System</h3>
+              <p>This module is under development.</p>
+            </div>
+          </div>
+        );
+
+      case 'payroll':
+        return (
+          <div className="subcategory-content">
+            <div className="subcategory-header">
+              <button onClick={handleBackToCategories} className="back-button">
+                <FaArrowLeft className="back-icon" />
+                Back to HR Categories
+              </button>
+              <h2>Payroll Management</h2>
+            </div>
+            <div className="module-placeholder">
+              <FaChartBar className="placeholder-icon" />
+              <h3>Payroll Processing System</h3>
+              <p>This module is under development.</p>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
+
+  if (activeSubCategory) {
+    return renderSubCategoryContent();
+  }
 
   return (
     <div className="hr-container">
       <div className="hr-header">
-        <div className="header-main">
-          <h1 className="main-title">Employee Search</h1>
-        </div>
-        <div className="user-stats">
-          <div className="active-users">
-            <div className="active-header">
-              <FaUsers className="users-icon" />
-              <span className="active-label">Active Users</span>
-            </div>
-            <span className="active-count">{activeUsers}</span>
-          </div>
-        </div>
+        <h1>Human Resource Management</h1>
+        <p>Select a category to manage HR operations</p>
       </div>
 
-      <div className="search-filters">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search employees by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <div className="filter-box">
-          <select
-            value={entriesPerPage}
-            onChange={(e) => {
-              setEntriesPerPage(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="entries-filter"
+      <div className="hr-categories-grid">
+        {hrCategories.map((category) => (
+          <div
+            key={category.key}
+            className="hr-category-card"
+            onClick={() => handleCategoryClick(category.key)}
           >
-            <option value="">Show all</option>
-            <option value="5">5 entries</option>
-            <option value="10">10 entries</option>
-            <option value="20">20 entries</option>
-            <option value="50">50 entries</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="table-container">
-        <table className="employees-table">
-          <thead>
-            <tr>
-              <th>EmpID</th>
-              <th>Status</th>
-              <th>Name</th>
-              <th>Report To</th>
-              <th>Division</th>
-              <th>Department</th>
-              <th>Designation</th>
-              <th>Grade</th>
-              <th>Zone</th>
-              <th>Branch</th>
-              <th>Mobile</th>
-              <th>Email</th>
-              <th>Display</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentEmployees.length > 0 ? (
-              currentEmployees.map((employee, index) => (
-                <tr key={employee.empId || index}>
-                  <td className="text-black">{employee.empId || 'N/A'}</td>
-                  <td>
-                    <span className={`status-badge ${employee.status ? employee.status.toLowerCase() : 'unknown'}`}>
-                      {employee.status || 'Unknown'}
-                    </span>
-                  </td>
-                  <td className="text-black">{employee.name || 'N/A'}</td>
-                  <td className="text-black">{employee.reportTo || 'N/A'}</td>
-                  <td className="text-black">{employee.division || 'N/A'}</td>
-                  <td className="text-black">{employee.department || 'N/A'}</td>
-                  <td className="text-black">{employee.designation || 'N/A'}</td>
-                  <td className="text-black">{employee.grade || 'N/A'}</td>
-                  <td className="text-black">{employee.zone || 'N/A'}</td>
-                  <td className="text-black">{employee.branch || 'N/A'}</td>
-                  <td className="text-black">{employee.mobile || 'N/A'}</td>
-                  <td className="text-black">{employee.email || 'N/A'}</td>
-                  <td className="display-cell">
-                    <button 
-                      className="search-icon-btn"
-                      onClick={() => handleSearchClick(employee)}
-                      title="View Profile"
-                    >
-                      <FaSearch />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr className="no-data-row">
-                <td colSpan="13" className="text-black">
-                  {employees.length === 0 ? 'No employees found' : 'No employees match your search'}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        {totalPages > 1 && (
-          <div className="pagination-controls">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="pagination-btn"
-            >
-              Previous
-            </button>
-            <span className="pagination-info">Page {currentPage} of {totalPages}</span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="pagination-btn"
-            >
-              Next
-            </button>
+            <div className="category-icon-container">
+              {category.icon}
+            </div>
+            <h3 className="category-title">{category.label}</h3>
+            <p className="category-description">{category.description}</p>
+            <div className="category-action">
+              <span className="action-text">Click to open</span>
+            </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
