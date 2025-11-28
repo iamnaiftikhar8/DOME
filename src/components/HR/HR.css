@@ -123,6 +123,7 @@
 .subcategory-content {
   padding: 20px;
   margin: 0 auto;
+  max-width: 100%;
 }
 
 .subcategory-header {

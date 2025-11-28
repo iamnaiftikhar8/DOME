@@ -538,12 +538,12 @@ keep the latest css properties only
   display: flex;
   align-items: center;
   justify-content: center; /* center icon + text horizontally */
-  gap: 6px;
+  gap: 4px;
   padding: 8px 12px;
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   white-space: nowrap;
   transition: background 0.2s;
   border-radius: 6px 6px 0px 0px;

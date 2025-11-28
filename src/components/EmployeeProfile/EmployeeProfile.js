@@ -12,42 +12,43 @@ const EmployeeProfile = ({ employee, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [loanData, setLoanData] = useState([
-    {
-      type: "Personal",
-      loanId: "LN-001",
-      date: "2024-10-10",
-      maturity: "2026-10-10",
-      loan: 50000,
-      adjustment: 0,
-      afterAdjustment: 50000,
-      installment: 5000,
-      recovered: 20000,
-      balance: 30000,
-      status: "Active",
-      docStatus: "Complete",
-      tempHold: "No"
-    }
-  ]);
+  const [loanData, setLoanData] = useState([null]);
 
   const [editingLoan, setEditingLoan] = useState(null);
 
   const openEditModal = (loan) => {
-    setEditingLoan({ ...loan,
-    status: loan.status || "active",
-    tempStop: loan.tempStop || "inactive", });
-  };
+  setEditingLoan({ 
+    ...loan,
+    Status: loan.Status || "Yes", // Default to "Yes" (Active)
+    Doc: loan.Doc || "Pending",
+    Stage: loan.Stage || "Applied"
+  });
+};
 
   const closeModal = () => {
     setEditingLoan(null);
   };
 
   const updateLoan = () => {
-    setLoanData(prev =>
-      prev.map(l => l.loanId === editingLoan.loanId ? editingLoan : l)
-    );
-    closeModal();
+  // Calculate new balance
+  const updatedLoan = {
+    ...editingLoan,
+    Balance: (editingLoan.Approved || 0) - (editingLoan.Recovered || 0)
   };
+
+  setLoanData(prev =>
+    prev.map(l => 
+      l.ID === updatedLoan.ID || 
+      (l.LoanType === updatedLoan.LoanType && l.EmpID === updatedLoan.EmpID) 
+        ? updatedLoan 
+        : l
+    )
+  );
+  closeModal();
+  
+  // Show success message
+  alert('Loan details updated successfully!');
+};
 
 
   const tabs = [
@@ -103,6 +104,42 @@ const EmployeeProfile = ({ employee, onBack }) => {
     fetchDetailedProfile();
   }, [employee]);
 
+  useEffect(() => {
+  const fetchEmployeeLoans = async () => {
+    if (!employee || !employee.empId) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
+
+      // CORRECTED: Using port 3000 and correct endpoint
+      const response = await fetch(`http://localhost:5000/api/hr/employee-loans/${employee.empId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch employee loans');
+
+      const data = await response.json();
+      console.log('Loan API Response:', data); // Debug log
+      
+      if (data.operation === 'success') {
+        setLoanData(data.data || []); // Update loanData state with real data
+      } else {
+        throw new Error(data.message || 'Failed to load employee loans');
+      }
+    } catch (err) {
+      console.error('Error fetching employee loans:', err);
+      setLoanData([]); 
+    }
+  };
+
+  fetchEmployeeLoans();
+}, [employee]);
+
   if (!employee) {
     return (
       <div className="profile-container">
@@ -149,41 +186,14 @@ const EmployeeProfile = ({ employee, onBack }) => {
   }
 
   const renderLoanInfo = () => {
-  // Dummy data; replace with actual employee loan data
-  const loans = [
-    {
-      loanType: 'Personal',
-      loanId: 'LN001',
-      date: '2025-01-10',
-      maturity: '2026-01-10',
-      loan: 50000,
-      adjustment: 5000,
-      afterAdjustment: 45000,
-      installment: 5000,
-      recovered: 10000,
-      balance: 35000,
-      loanStatus: 'Active',
-      docStatus: 'Verified',
-      tempHold: 'No',
-      option: 'Edit',
-    },
-    {
-      loanType: 'Housing',
-      loanId: 'LN002',
-      date: '2024-03-15',
-      maturity: '2027-03-15',
-      loan: 200000,
-      adjustment: 20000,
-      afterAdjustment: 180000,
-      installment: 15000,
-      recovered: 60000,
-      balance: 120000,
-      loanStatus: 'Active',
-      docStatus: 'Pending',
-      tempHold: 'Yes',
-      option: 'Edit',
-    },
-  ];
+  if (!loanData || loanData.length === 0) {
+    return (
+      <div className="tab-content">
+        <h4>Employee Loans</h4>
+        <p>No loan data available for this employee.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="tab-content">
@@ -193,45 +203,52 @@ const EmployeeProfile = ({ employee, onBack }) => {
           <thead>
             <tr>
               <th>Loan Type</th>
-              <th>Loan ID</th>
-              <th>Date</th>
-              <th>Maturity</th>
-              <th>Loan</th>
-              <th>Adjustment</th>
-              <th>After Adjustment</th>
+              <th>Emp ID</th>
+              <th>Required Date</th>
+              <th>Maturity Date</th>
+              <th>Requested Amount</th>
+              <th>Approved Amount</th>
               <th>Installment</th>
-              <th>Recovered</th>
+              <th>Recovered Amount</th>
               <th>Balance</th>
-              <th>Loan Status</th>
-              <th>Doc Status</th>
-              <th>Temp Hold</th>
-              <th>Option</th>
+              <th>Document Status</th>
+              <th>Approval Stage</th>
+              <th>Status</th>
+              <th>Options</th>
             </tr>
           </thead>
 
           <tbody>
             {loanData.map((loan, index) => (
               <tr key={index}>
-                <td>{loan.type}</td>
-                <td>{loan.loanId}</td>
-                <td>{loan.date}</td>
-                <td>{loan.maturity}</td>
-                <td>{loan.loan}</td>
-                <td>{loan.adjustment}</td>
-                <td>{loan.afterAdjustment}</td>
-                <td>{loan.installment}</td>
-                <td>{loan.recovered}</td>
-                <td>{loan.balance}</td>
-                <td><span className={`loan-status ${loan.status.toLowerCase()}`}>{loan.status}</span></td>
-                <td><span className="doc-status">{loan.docStatus}</span></td>
-                <td>{loan.tempHold}</td>
-
-                {/* EDIT BUTTON */}
+                <td>{loan.LoanType || 'N/A'}</td>
+                <td>{loan.EmpID || 'N/A'}</td>
+                <td>{loan.Required || 'N/A'}</td>
+                <td>{loan.Maturity || 'N/A'}</td>
+                <td>{loan.Request ? `${loan.Request.toLocaleString()}` : '0'}</td>
+                <td>{loan.Approved ? `${loan.Approved.toLocaleString()}` : '0'}</td>
+                <td>{loan.Installment ? `${loan.Installment.toLocaleString()}` : '0'}</td>
+                <td>{loan.Recovered ? `${loan.Recovered.toLocaleString()}` : '0'}</td>
+                <td className={loan.Balance > 0 ? 'positive-balance' : 'zero-balance'}>
+                  {loan.Balance ? `${loan.Balance.toLocaleString()}` : '0'}
+                </td>
                 <td>
-                  <button 
-                    className="edit-btn"
-                    onClick={() => openEditModal(loan)}
-                  >
+                  <span className={`doc-status ${loan.Doc ? loan.Doc.toLowerCase() : ''}`}>
+                    {loan.Doc || 'N/A'}
+                  </span>
+                </td>
+                <td>
+                  <span className={`stage-status ${loan.Stage ? loan.Stage.toLowerCase() : ''}`}>
+                    {loan.Stage || 'N/A'}
+                  </span>
+                </td>
+                <td>
+                  <span className={`loan-status ${loan.Status === 'Yes' ? 'active' : 'inactive'}`}>
+                    {loan.Status === 'Yes' ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td>
+                  <button className="edit-btn" onClick={() => openEditModal(loan)}>
                     Edit
                   </button>
                 </td>
@@ -239,30 +256,50 @@ const EmployeeProfile = ({ employee, onBack }) => {
             ))}
           </tbody>
         </table>
+
+        {/* Edit Modal */}
         {editingLoan && (
           <div className="modal-overlay">
             <div className="modal-box">
-              <h3 className="modal-title">Edit Loan Entry</h3>
+              <h3 className="modal-title">Edit Loan Details</h3>
 
               <div className="modal-body">
+                {/* Loan Type (Read-only) */}
+                <label>Loan Type</label>
+                <input
+                  type="text"
+                  value={editingLoan.LoanType || ''}
+                  disabled
+                  className="readonly-input"
+                />
 
-                {/* Loan */}
-                <label>Loan</label>
+                {/* Approved Amount */}
+                <label>Approved Amount (PKR)</label>
                 <input
                   type="number"
-                  value={editingLoan.loan || ""}
+                  value={editingLoan.Approved || 0}
                   onChange={(e) =>
-                    setEditingLoan({ ...editingLoan, loan: e.target.value })
+                    setEditingLoan({ ...editingLoan, Approved: parseInt(e.target.value) || 0 })
                   }
                 />
 
-                {/* After Adjustment */}
-                <label>After Adjustment</label>
+                {/* Installment Amount */}
+                <label>Installment Amount (PKR)</label>
                 <input
                   type="number"
-                  value={editingLoan.afterAdjustment}
+                  value={editingLoan.Installment || 0}
                   onChange={(e) =>
-                    setEditingLoan({ ...editingLoan, afterAdjustment: e.target.value })
+                    setEditingLoan({ ...editingLoan, Installment: parseInt(e.target.value) || 0 })
+                  }
+                />
+
+                {/* Recovered Amount */}
+                <label>Recovered Amount (PKR)</label>
+                <input
+                  type="number"
+                  value={editingLoan.Recovered || 0}
+                  onChange={(e) =>
+                    setEditingLoan({ ...editingLoan, Recovered: parseInt(e.target.value) || 0 })
                   }
                 />
 
@@ -270,105 +307,91 @@ const EmployeeProfile = ({ employee, onBack }) => {
                 <label>Maturity Date</label>
                 <input
                   type="date"
-                  value={editingLoan.maturityDate}
+                  value={editingLoan.Maturity ? editingLoan.Maturity.split('-').reverse().join('-') : ''}
                   onChange={(e) =>
-                    setEditingLoan({ ...editingLoan, maturityDate: e.target.value })
+                    setEditingLoan({ 
+                      ...editingLoan, 
+                      Maturity: e.target.value.split('-').reverse().join('-') 
+                    })
                   }
                 />
 
-                {/* Approved Installment */}
-                <label>Approved Installment</label>
-                <input
-                  type="number"
-                  value={editingLoan.approvedInstallment}
-                  onChange={(e) =>
-                    setEditingLoan({ ...editingLoan, approvedInstallment: e.target.value })
-                  }
-                />
-
-                {/* Recovered Amount */}
-                <label>Recovered Amount</label>
-                <input
-                  type="number"
-                  value={editingLoan.recovered}
-                  onChange={(e) =>
-                    setEditingLoan({ ...editingLoan, recovered: e.target.value })
-                  }
-                />
-
-                {/* Status Radio Buttons */}
-                <label>Status</label>
+                {/* Status */}
+                <label>Loan Status</label>
                 <div className="radio-group">
-                  <optionrad>
+                  <label>
                     <input
                       type="radio"
                       name="status"
-                      value="active"
-                      checked={editingLoan.status === "active"}
+                      value="Yes"
+                      checked={editingLoan.Status === "Yes"}
                       onChange={() =>
-                        setEditingLoan({ ...editingLoan, status: "active" })
+                        setEditingLoan({ ...editingLoan, Status: "Yes" })
                       }
                     />
                     Active
-                  </optionrad>
-
-                  <optionrad>
+                  </label>
+                  <label>
                     <input
                       type="radio"
                       name="status"
-                      value="inactive"
-                      checked={editingLoan.status === "inactive"}
+                      value="No"
+                      checked={editingLoan.Status === "No"}
                       onChange={() =>
-                        setEditingLoan({ ...editingLoan, status: "inactive" })
+                        setEditingLoan({ ...editingLoan, Status: "No" })
                       }
                     />
                     Inactive
-                  </optionrad>
+                  </label>
                 </div>
 
-                {/* Temp Stop Radio Buttons */}
-                <label>Temp Stop</label>
-                <div className="radio-group">
-                  <optionrad>
-                    <input
-                      type="radio"
-                      name="tempStop"
-                      value="active"
-                      checked={editingLoan.tempStop === "active"}
-                      onChange={() =>
-                        setEditingLoan({ ...editingLoan, tempStop: "active" })
-                      }
-                    />
-                    Active
-                  </optionrad>
+                {/* Document Status */}
+                <label>Document Status</label>
+                <select
+                  value={editingLoan.Doc || ''}
+                  onChange={(e) =>
+                    setEditingLoan({ ...editingLoan, Doc: e.target.value })
+                  }
+                >
+                  <option value="Complete">Complete</option>
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
 
-                  <optionrad>
-                    <input
-                      type="radio"
-                      name="tempStop"
-                      value="inactive"
-                      checked={editingLoan.tempStop === "inactive"}
-                      onChange={() =>
-                        setEditingLoan({ ...editingLoan, tempStop: "inactive" })
-                      }
-                    />
-                    Inactive
-                  </optionrad>
-                </div>
+                {/* Approval Stage */}
+                <label>Approval Stage</label>
+                <select
+                  value={editingLoan.Stage || ''}
+                  onChange={(e) =>
+                    setEditingLoan({ ...editingLoan, Stage: e.target.value })
+                  }
+                >
+                  <option value="Applied">Applied</option>
+                  <option value="Under Review">Under Review</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Disbursed">Disbursed</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
 
+                {/* Calculated Balance (Read-only) */}
+                <label>Calculated Balance (PKR)</label>
+                <input
+                  type="text"
+                  value={`PKR${((editingLoan.Approved || 0) - (editingLoan.Recovered || 0)).toLocaleString()}`}
+                  disabled
+                  className="readonly-input"
+                />
               </div>
 
               <div className="modal-actions">
-                <button className="save-btn" onClick={updateLoan}>Update</button>
+                <button className="save-btn" onClick={updateLoan}>Update Loan</button>
                 <button className="cancel-btn" onClick={closeModal}>Cancel</button>
               </div>
             </div>
           </div>
         )}
-
-
       </div>
-
     </div>
   );
 };
