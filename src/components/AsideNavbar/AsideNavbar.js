@@ -1,27 +1,17 @@
 import React from 'react';
 import { 
-  FaHome, 
-  FaRegUser, 
-  FaShippingFast,
-  FaRegCompass,
-  FaSignOutAlt,
-  FaChevronLeft,
-  FaChevronRight
+  FaHome, FaRegUser, FaShippingFast, FaRegCompass, 
+  FaSignOutAlt, FaChevronLeft, FaChevronRight 
 } from 'react-icons/fa';
+import domelogo from '../../assets/images/dome-logo-wht.png';
 import './AsideNavbar.css';
 
-const SideNavbar = ({ 
-  activeTab, 
-  onTabChange, 
-  onLogout, 
-  isCollapsed = false, 
-  onToggleCollapse 
-}) => {
+const SideNavbar = ({ activeTab, onTabChange, onLogout, isCollapsed, onToggleCollapse }) => {
   const navItems = [
-    { key: 'home', label: 'Home', icon: <FaHome className="nav-icon" /> },
-    { key: 'human-resource', label: 'Human Resource', icon: <FaRegUser className="nav-icon" /> },
-    { key: 'supply-chain', label: 'Supply Chain', icon: <FaShippingFast className="nav-icon" /> },
-    { key: 'logistics', label: 'Logistics', icon: <FaRegCompass className="nav-icon" /> },
+    { key: 'home', label: 'Home', icon: <FaHome /> },
+    { key: 'human-resource', label: 'Human Resource', icon: <FaRegUser /> },
+    { key: 'supply-chain', label: 'Supply Chain', icon: <FaShippingFast /> },
+    { key: 'logistics', label: 'Logistics', icon: <FaRegCompass /> },
   ];
 
   const handleLogout = () => {
@@ -34,67 +24,47 @@ const SideNavbar = ({
     <div className={`sidenav ${isCollapsed ? 'collapsed' : ''}`}>
       {/* Header */}
       <div className="sidenav-header">
-        {!isCollapsed && (
+        {!isCollapsed ? (
           <div className="header-content">
             <div className="logo-section">
-              <div className="logo-placeholder">D</div>
-              <div className="logo-text">
-                <div className="logo-title">DOME</div>
-                <div className="logo-subtitle">Digital Office Management</div>
-              </div>
+              <img src={domelogo} alt="DOME Logo" className="logo-image" />
             </div>
           </div>
-        )}
-        {isCollapsed && (
+        ) : (
           <div className="logo-collapsed">
             <div className="logo-placeholder">D</div>
           </div>
         )}
+
         <button className="collapse-btn" onClick={onToggleCollapse}>
           {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
         </button>
       </div>
 
-      {/* Navigation Items */}
+      {/* Navigation */}
       <div className="sidenav-content">
-        <nav className="sidenav-nav">
-          {navItems.map((item) => (
-            <div
-              key={item.key}
-              className={`nav-item ${activeTab === item.key ? 'active' : ''}`}
-              onClick={() => onTabChange(item.key)}
-              title={isCollapsed ? item.label : ''}
-            >
-              {item.icon}
-              {!isCollapsed && <span className="nav-label">{item.label}</span>}
-              {activeTab === item.key && !isCollapsed && (
-                <div className="active-indicator"></div>
-              )}
-            </div>
-          ))}
-        </nav>
+        {navItems.map((item) => (
+          <div
+            key={item.key}
+            className={`nav-item ${activeTab === item.key ? 'active' : ''}`}
+            onClick={() => onTabChange(item.key)}
+            title={isCollapsed ? item.label : ''}
+          >
+            {item.icon}
+            {!isCollapsed && <span className="nav-label">{item.label}</span>}
+          </div>
+        ))}
       </div>
 
-      {/* Footer with Logout */}
+      {/* Footer */}
       <div className="sidenav-footer">
-        <div 
-          className="logout-item"
-          onClick={handleLogout}
-          title={isCollapsed ? 'Logout' : ''}
-        >
-          <FaSignOutAlt className="nav-icon" />
+        <div className="logout-item" onClick={handleLogout} title={isCollapsed ? 'Logout' : ''}>
+          <FaSignOutAlt />
           {!isCollapsed && <span className="nav-label">Logout</span>}
         </div>
-        
         {!isCollapsed && (
           <div className="user-info">
-            <div className="user-avatar">
-              <span>U</span>
-            </div>
-            <div className="user-details">
-              <div className="user-name"></div>
-              <div className="user-role"></div>
-            </div>
+            <div className="user-avatar">U</div>
           </div>
         )}
       </div>

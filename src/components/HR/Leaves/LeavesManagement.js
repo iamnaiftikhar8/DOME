@@ -319,11 +319,6 @@ const LeavesManagement = () => {
 
   return (
     <div className="leaves-management">
-      <div className="leaves-header">
-        <h2>Leaves Management</h2>
-        <p>Manage your leave applications and view balances</p>
-      </div>
-
       {error && (
         <div className="error-message">
           {error}

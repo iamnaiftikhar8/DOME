@@ -1,10 +1,12 @@
+keep the latest css properties only
+
 /* EmployeeProfile.css - Light Theme */
 
 .profile-container {
-  padding: 20px;
+  padding: 2%;
   background: #ffffff;
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
 }
 
 .profile-header {
@@ -54,13 +56,33 @@
   align-items: center;
 }
 
+.employee-header {
+  display: flex;
+  justify-content: space-between; /* pushes badge to the right */
+  align-items: center;            /* vertically centers text and badge */
+  margin-bottom: 16px;
+}
+
+.employee-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin: 0;
+}
+
 .status-badge {
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
+
+  width: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 
 .status-badge.active {
   background: #e8f5e8;
@@ -80,9 +102,24 @@
   border: 1px solid #e0e0e0;
 }
 
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
 .profile-content {
-  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .profile-card {
@@ -90,6 +127,7 @@
   border-radius: 8px;
   border: 1px solid #e0e0e0;
   overflow: hidden;
+  width: 100%;
 }
 
 /* Profile Header Info */
@@ -97,9 +135,10 @@
   display: flex;
   align-items: center;
   padding: 30px;
-  background: #f8f9fa;
+  background: white;
   border-bottom: 1px solid #e0e0e0;
   gap: 25px;
+  width: 100%;
 }
 
 .profile-image-container {
@@ -166,13 +205,13 @@
 }
 
 /* Tabs Navigation */
-.profile-tabs {
+.eprofile-tabs {
   display: flex;
   background: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
 }
 
-.tab-button {
+.etab-button {
   padding: 14px 24px;
   background: none;
   border: none;
@@ -184,12 +223,13 @@
   transition: all 0.2s ease;
 }
 
-.tab-button:hover {
+.etab-button:hover {
   color: #333;
   background: #f0f0f0;
+  border-bottom-color: #666;
 }
 
-.tab-button.active {
+.etab-button.active {
   color: #007bff;
   border-bottom-color: #007bff;
   background: white;
@@ -198,6 +238,7 @@
 /* Tab Content */
 .tab-container {
   padding: 30px;
+   background: #f8f9fa;
 }
 
 .tab-content {
@@ -216,7 +257,7 @@
 }
 
 .info-section {
-  background: #fafafa;
+  background: white;
   padding: 20px;
   border-radius: 6px;
   border: 1px solid #f0f0f0;
@@ -296,7 +337,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .profile-container {
-    padding: 10px;
+    padding: 5%;
   }
 
   .profile-header {
@@ -313,11 +354,11 @@
     gap: 15px;
   }
 
-  .profile-tabs {
+  .eprofile-tabs {
     flex-wrap: wrap;
   }
 
-  .tab-button {
+  .etab-button {
     flex: 1;
     min-width: 120px;
     padding: 12px 16px;
@@ -365,18 +406,18 @@
 }
 
 @media (max-width: 480px) {
-  .profile-tabs {
+  .eprofile-tabs {
     flex-direction: column;
   }
 
-  .tab-button {
+  .etab-button {
     width: 100%;
     text-align: center;
     border-bottom: 1px solid #e0e0e0;
     border-left: 2px solid transparent;
   }
 
-  .tab-button.active {
+  .etab-button.active {
     border-left-color: #007bff;
     border-bottom-color: #e0e0e0;
   }
@@ -419,11 +460,281 @@
     -webkit-print-color-adjust: exact;
   }
 
-  .tab-button:not(.active) {
+  .etab-button:not(.active) {
     display: none;
   }
 
   .info-section {
     break-inside: avoid;
   }
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.info-card h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 500;
+  color: #666;
+}
+
+.value {
+  font-weight: 600;
+  color: #222;
+  text-align: right;
+  max-width: 160px;
+  overflow-wrap: break-word;
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 0; /* no gap, spacing handled by flex */
+  padding: 8px 0;
+  border-bottom: 1px solid #ccc;
+  width: 100%;
+}
+
+.tab-button {
+  flex: 1; /* each tab takes equal width */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center icon + text horizontally */
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background 0.2s;
+  border-radius: 6px 6px 0px 0px;
+}
+
+.tab-button.active {
+  background: #0586cb;
+  border-radius: 6px 6px 0px 0px;
+  color: #fff;
+}
+
+.tab-button:hover {
+  /* background: #f0f0f0; */
+  border-bottom: 2px solid #0586cb;
+  color: #000;
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.loan-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: white;
+}
+
+.loan-table th {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.loan-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #555;
+  vertical-align: middle;
+}
+
+/* Optional: small pill badge for Loan Status */
+.loan-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.loan-status.active {
+  background: #d4f6e6;
+  color: #0a8a52;
+}
+
+.loan-status.closed {
+  background: #ffe5e5;
+  color: #cc0000;
+}
+
+.loan-status.pending {
+  background: #fff4cc;
+  color: #a07b00;
+}
+
+/* Optional: Doc status pill */
+.doc-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  background: #e7e7e7;
+  color: #555;
+}
+
+/* Make table responsive on small screens */
+@media (max-width: 768px) {
+  .loan-table th,
+  .loan-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .loan-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+.edit-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #0062d6;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  background: white;
+  width: 420px;
+  max-width: 90%;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.modal-title {
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.modal-body label {
+  display: flex;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.modal-body optionrad {
+  display: flex;
+  font-size: 14px;
+  font-weight: 400;
+  margin-left: 10px;
+  gap: 10px;
+}
+
+.modal-body input {
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 100px;
+  margin-top: 8px;
+  margin-bottom: 25px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.save-btn {
+  background: #007bff;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+}
+
+.cancel-btn {
+  background: #ccc;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
 }

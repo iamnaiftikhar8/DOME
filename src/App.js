@@ -11,10 +11,7 @@ function App() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
+  const handleLogin = () => setIsLoggedIn(true);
   const handleLogout = () => {
     setIsLoggedIn(false);
     setActiveTab('home');
@@ -36,58 +33,68 @@ function App() {
     setSelectedEmployee(null);
   };
 
-  const toggleSidebar = () => {
+  const toggleSidebar = () =>
     setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
 
   const renderContent = () => {
-    switch(activeTab) {
+    switch (activeTab) {
       case 'home':
         return (
-          <div className="content-area">
-            <h2>Dashboard Overview</h2>
-            <div className="welcome-section">
-              <p>Welcome to DOME - Digital Office Management Engine</p>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <h3>Total Employees</h3>
-                  <div className="stat-number">150</div>
-                </div>
-                <div className="stat-card">
-                  <h3>Active Users</h3>
-                  <div className="stat-number">142</div>
-                </div>
-                <div className="stat-card">
-                  <h3>Departments</h3>
-                  <div className="stat-number">12</div>
-                </div>
+          <div className="content-wrapper">
+            <h2 className="page-title">Home</h2>
+
+            <div className="welcome-card">
+              <p className="welcome-text">
+                Welcome to <span className="brand-blue">DOME</span> — Digital Office Management Engine
+              </p>
+            </div>
+
+            <div className="stats-grid">
+              <div className="stat-card">
+                <h3>Total Employees</h3>
+                <div className="stat-number">150</div>
+              </div>
+
+              <div className="stat-card">
+                <h3>Active Users</h3>
+                <div className="stat-number">142</div>
+              </div>
+
+              <div className="stat-card">
+                <h3>Departments</h3>
+                <div className="stat-number">12</div>
               </div>
             </div>
           </div>
         );
+
       case 'human-resource':
         return <HR onViewProfile={handleViewProfile} />;
+
       case 'employee-profile':
         return <EmployeeProfile employee={selectedEmployee} onBack={handleBackToHR} />;
+
       case 'supply-chain':
         return (
-          <div className="content-area">
-            <h2>Supply Chain Management</h2>
-            <div className="module-text">Supply chain modules and features will be displayed here.</div>
+          <div className="content-wrapper">
+            <h2 className="page-title">Supply Chain Management</h2>
+            <p className="module-text">Supply chain modules and features will be displayed here.</p>
           </div>
         );
+
       case 'logistics':
         return (
-          <div className="content-area">
-            <h2>Logistics Management</h2>
-            <div className="module-text">Logistics and transportation modules will be displayed here.</div>
+          <div className="content-wrapper">
+            <h2 className="page-title">Logistics Management</h2>
+            <p className="module-text">Logistics and transportation modules will be displayed here.</p>
           </div>
         );
+
       default:
         return (
-          <div className="content-area">
-            <h2>Dashboard</h2>
-            <div className="module-text">Select a module from the sidebar to get started.</div>
+          <div className="content-wrapper">
+            <h2 className="page-title">Dashboard</h2>
+            <p className="module-text">Select a module from the sidebar to get started.</p>
           </div>
         );
     }
@@ -97,14 +104,14 @@ function App() {
     <div className="App">
       {isLoggedIn ? (
         <div className="app-container">
-          <SideNavbar 
+          <SideNavbar
             activeTab={activeTab}
             onTabChange={handleTabChange}
             onLogout={handleLogout}
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={toggleSidebar}
           />
-          
+
           <div className={`main-content ${isSidebarCollapsed ? 'collapsed' : ''}`}>
             {renderContent()}
           </div>

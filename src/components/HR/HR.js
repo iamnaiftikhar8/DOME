@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaUsers, FaCalendarAlt, FaChartBar, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaUsers, FaCalendarAlt, FaChartBar, FaArrowLeft, FaFile, FaMoneyCheckAlt, FaCalendarCheck } from 'react-icons/fa';
 import EmployeeProfile from '../EmployeeProfile/EmployeeProfile';
 import EmployeeList from './EmployeeList';
 import LeavesManagement from './Leaves/LeavesManagement';
@@ -38,13 +38,13 @@ const HR = ({ onViewProfile }) => {
     {
       key: 'attendance',
       label: 'Attendance',
-      icon: <FaChartBar className="category-icon" />,
+      icon: <FaCalendarCheck className="category-icon" />,
       description: 'Track and manage employee attendance records'
     },
     {
       key: 'payroll',
       label: 'Payroll',
-      icon: <FaChartBar className="category-icon" />,
+      icon: <FaMoneyCheckAlt className="category-icon" />,
       description: 'Process payroll and manage salary information'
     }
   ];
@@ -132,15 +132,14 @@ const HR = ({ onViewProfile }) => {
         }
         return myProfileData ? (
           <div className="subcategory-content">
-            <div className="subcategory-header">
-              <button onClick={handleBackToCategories} className="back-button">
-                <FaArrowLeft className="back-icon" />
-                Back to HR Categories
-              </button>
-              <h2>My Profile</h2>
+            <div className="profile-wrapper">
+              <EmployeeProfile 
+                employee={myProfileData} 
+                onBack={handleBackToCategories} 
+              />
             </div>
-            <EmployeeProfile employee={myProfileData} onBack={handleBackToCategories} />
           </div>
+
         ) : (
           <div className="error-message">
             <p>Unable to load profile data.</p>
@@ -152,14 +151,16 @@ const HR = ({ onViewProfile }) => {
 
       case 'employee-management':
         return (
-          <div className="subcategory-content">
-            <div className="subcategory-header">
+          <div className="subcategory-header">
+              <div className="header-left">
+                <div className="header-title">
+                <h2>Employee Management</h2>
+              </div>
+              </div>
               <button onClick={handleBackToCategories} className="back-button">
-                <FaArrowLeft className="back-icon" />
-                Back to HR Categories
-              </button>
-              <h2>Employee Management</h2>
-            </div>
+                  <FaArrowLeft className="back-icon" />
+                  Return
+                </button>
             <EmployeeList onViewProfile={handleEmployeeClick} />
           </div>
         );
@@ -168,11 +169,15 @@ const HR = ({ onViewProfile }) => {
   return (
     <div className="subcategory-content">
       <div className="subcategory-header">
+        <div className="header-left">
+          <div className="header-title">
+          <h2>Leaves Management</h2>
+        </div>
+        </div>
         <button onClick={handleBackToCategories} className="back-button">
-          <FaArrowLeft className="back-icon" />
-          Back to HR Categories
-        </button>
-        <h2>Leaves Management</h2>
+            <FaArrowLeft className="back-icon" />
+            Return
+          </button>
       </div>
       <LeavesManagement />
     </div>
@@ -182,11 +187,15 @@ const HR = ({ onViewProfile }) => {
         return (
           <div className="subcategory-content">
             <div className="subcategory-header">
+              <div className="header-left">
+                <div className="header-title">
+                <h2>HR Analytics & Reports</h2>
+              </div>
+              </div>
               <button onClick={handleBackToCategories} className="back-button">
-                <FaArrowLeft className="back-icon" />
-                Back to HR Categories
-              </button>
-              <h2>HR Reports</h2>
+                  <FaArrowLeft className="back-icon" />
+                  Return
+                </button>
             </div>
             <div className="module-placeholder">
               <FaChartBar className="placeholder-icon" />
@@ -207,11 +216,15 @@ const HR = ({ onViewProfile }) => {
         return (
           <div className="subcategory-content">
             <div className="subcategory-header">
+              <div className="header-left">
+                <div className="header-title">
+                <h2>Attendance</h2>
+              </div>
+              </div>
               <button onClick={handleBackToCategories} className="back-button">
-                <FaArrowLeft className="back-icon" />
-                Back to HR Categories
-              </button>
-              <h2>Attendance Management</h2>
+                  <FaArrowLeft className="back-icon" />
+                  Return
+                </button>
             </div>
             <div className="module-placeholder">
               <FaChartBar className="placeholder-icon" />
@@ -225,11 +238,15 @@ const HR = ({ onViewProfile }) => {
         return (
           <div className="subcategory-content">
             <div className="subcategory-header">
+              <div className="header-left">
+                <div className="header-title">
+                <h2>Payroll</h2>
+              </div>
+              </div>
               <button onClick={handleBackToCategories} className="back-button">
-                <FaArrowLeft className="back-icon" />
-                Back to HR Categories
-              </button>
-              <h2>Payroll Management</h2>
+                  <FaArrowLeft className="back-icon" />
+                  Return
+                </button>
             </div>
             <div className="module-placeholder">
               <FaChartBar className="placeholder-icon" />
@@ -251,8 +268,7 @@ const HR = ({ onViewProfile }) => {
   return (
     <div className="hr-container">
       <div className="hr-header">
-        <h1>Human Resource Management</h1>
-        <p>Select a category to manage HR operations</p>
+        <h2>Human Resource Management</h2>
       </div>
 
       <div className="hr-categories-grid">
@@ -267,9 +283,6 @@ const HR = ({ onViewProfile }) => {
             </div>
             <h3 className="category-title">{category.label}</h3>
             <p className="category-description">{category.description}</p>
-            <div className="category-action">
-              <span className="action-text">Click to open</span>
-            </div>
           </div>
         ))}
       </div>

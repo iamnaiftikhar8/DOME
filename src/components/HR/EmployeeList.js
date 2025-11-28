@@ -1,52 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaSearch, FaUsers } from 'react-icons/fa';
 import './HR.css';
 
 const EmployeeList = ({ onViewProfile }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [entriesPerPage, setEntriesPerPage] = useState('');
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'empId', direction: 'desc' });
+  const [statusFilter, setStatusFilter] = useState('active'); // all / active / inactive
 
-  // Fetch employees from API
+  // Fetch employees
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
         setLoading(true);
         setError('');
-        
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          throw new Error('No authentication token found. Please login again.');
-        }
 
-        const response = await fetch('http://localhost:5000/api/hr/employees', { 
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No authentication token found. Please login again.');
+
+        const response = await fetch('http://localhost:5000/api/hr/employees', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         });
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Authentication failed. Please login again.');
-          }
-          throw new Error(`Failed to fetch employees: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Failed to fetch employees: ${response.status}`);
         const data = await response.json();
-        
-        if (data.operation === 'success' && Array.isArray(data.data)) {
-          setEmployees(data.data);
-        } else {
-          throw new Error('Unexpected API response format');
-        }
+
+        if (data.operation === 'success' && Array.isArray(data.data)) setEmployees(data.data);
+        else throw new Error('Unexpected API response format');
       } catch (err) {
-        console.error('Error fetching employees:', err);
         setError(err.message);
         setEmployees([]);
       } finally {
@@ -57,64 +43,61 @@ const EmployeeList = ({ onViewProfile }) => {
     fetchEmployees();
   }, []);
 
-  // Map API field names to component field names
-  const mappedEmployees = employees.map(employee => ({
-    empId: employee.EmpID,
-    status: employee.Status,
-    name: employee.Name,
-    reportTo: employee.ReportTo,
-    division: employee.Division,
-    department: employee.Department,
-    designation: employee.Designation,
-    grade: employee.Grade,
-    zone: employee.Zone,
-    branch: employee.Branch,
-    mobile: employee.Mobile,
-    email: employee['E-Mail']
-  }));
-
-  const filteredEmployees = mappedEmployees.filter(employee => 
-    employee.name && employee.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // Map API fields
+  const mappedEmployees = useMemo(
+    () =>
+      employees.map(emp => ({
+        empId: emp.EmpID,
+        status: emp.Status,
+        name: emp.Name,
+        reportTo: emp.ReportTo,
+        division: emp.Division,
+        department: emp.Department,
+        designation: emp.Designation,
+        grade: emp.Grade,
+        zone: emp.Zone,
+        branch: emp.Branch,
+        mobile: emp.Mobile,
+        email: emp['E-Mail'],
+      })),
+    [employees]
   );
 
-  // Calculate active users
-  const activeUsers = mappedEmployees.filter(emp => emp.status === 'Active').length;
+  // Filter by search and status
+  const filteredEmployees = useMemo(() => {
+    return mappedEmployees.filter(emp => {
+      const matchesSearch = emp.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && emp.status?.toLowerCase() === 'active') ||
+        (statusFilter === 'inactive' && emp.status?.toLowerCase() === 'inactive');
+      return matchesSearch && matchesStatus;
+    });
+  }, [mappedEmployees, searchTerm, statusFilter]);
 
-  const totalEntries = filteredEmployees.length;
-  const entriesToShow = entriesPerPage ? parseInt(entriesPerPage) : totalEntries;
-  const totalPages = Math.ceil(totalEntries / entriesToShow);
-  
-  const startIndex = (currentPage - 1) * entriesToShow;
-  const endIndex = startIndex + entriesToShow;
-  const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+  // Sort filtered employees
+  const sortedEmployees = useMemo(() => {
+    const sorted = [...filteredEmployees].sort((a, b) => {
+      const valA = a[sortConfig.key] || '';
+      const valB = b[sortConfig.key] || '';
+      if (typeof valA === 'string') return valA.localeCompare(valB);
+      return valA - valB;
+    });
+    if (sortConfig.direction === 'desc') sorted.reverse();
+    return sorted;
+  }, [filteredEmployees, sortConfig]);
 
-  const handleSearchClick = (employee) => {
-    onViewProfile(employee);
-  };
+  // Pagination
+  const totalEntries = sortedEmployees.length;
+  const totalPages = Math.ceil(totalEntries / entriesPerPage);
+  const startIndex = (currentPage - 1) * entriesPerPage;
+  const currentEmployees = sortedEmployees.slice(startIndex, startIndex + entriesPerPage);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const handleViewProfile = employee => onViewProfile(employee);
+  const handlePageChange = page => setCurrentPage(page);
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading employees...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <p>Error: {error}</p>
-        <button onClick={() => window.location.reload()} className="retry-button">
-          Retry
-        </button>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading-message">Loading employees...</div>;
+  if (error) return <div className="profile-error">Error: {error}</div>;
 
   return (
     <div className="employee-list-container">
@@ -125,39 +108,74 @@ const EmployeeList = ({ onViewProfile }) => {
             <span>Total Employees: {mappedEmployees.length}</span>
           </div>
           <div className="stat-item">
-            <span className="active-indicator">Active: {activeUsers}</span>
+            <span className="active-indicator">
+              Active: {mappedEmployees.filter(emp => emp.status === 'Active').length}
+            </span>
           </div>
         </div>
       </div>
 
+      
+      {/* Filters */}
       <div className="search-filters">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search employees by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <div className="filter-box">
-          <select
-            value={entriesPerPage}
-            onChange={(e) => {
-              setEntriesPerPage(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="entries-filter"
-          >
-            <option value="">Show all</option>
-            <option value="10">10 entries</option>
-            <option value="25">25 entries</option>
-            <option value="50">50 entries</option>
-            <option value="100">100 entries</option>
-          </select>
-        </div>
+        <input
+          type="text"
+          placeholder="Search by name..."
+          value={searchTerm}
+          onChange={e => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="search-input"
+        />
+
+        <select
+          value={entriesPerPage}
+          onChange={e => {
+            setEntriesPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          className="entries-filter"
+        >
+          <option value={10}>10 entries</option>
+          <option value={25}>25 entries</option>
+          <option value={50}>50 entries</option>
+          <option value={100}>100 entries</option>
+        </select>
+
+        <select
+          value={sortConfig.key}
+          onChange={e => setSortConfig(prev => ({ ...prev, key: e.target.value }))}
+          className="entries-filter"
+        >
+          <option value="empId">Sort by EmpID</option>
+          <option value="name">Sort by Name</option>
+        </select>
+
+        <select
+          value={sortConfig.direction}
+          onChange={e => setSortConfig(prev => ({ ...prev, direction: e.target.value }))}
+          className="entries-filter"
+        >
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={e => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="entries-filter"
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
       </div>
 
+      {/* Employee Table */}
       <div className="table-container">
         <table className="employees-table">
           <thead>
@@ -174,72 +192,62 @@ const EmployeeList = ({ onViewProfile }) => {
               <th>Branch</th>
               <th>Mobile</th>
               <th>Email</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {currentEmployees.length > 0 ? (
-              currentEmployees.map((employee, index) => (
-                <tr key={employee.empId || index}>
-                  <td>{employee.empId || 'N/A'}</td>
+              currentEmployees.map((emp, index) => (
+                <tr
+                  key={emp.empId || index}
+                  onClick={() => handleViewProfile(emp)}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f0f8ff')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <td>{emp.empId || 'N/A'}</td>
                   <td>
-                    <span className={`status-badge ${employee.status ? employee.status.toLowerCase() : 'unknown'}`}>
-                      {employee.status || 'Unknown'}
+                    <span
+                      className={`status-badge ${
+                        emp.status ? emp.status.toLowerCase() : 'unknown'
+                      }`}
+                    >
+                      {emp.status || 'Unknown'}
                     </span>
                   </td>
-                  <td>{employee.name || 'N/A'}</td>
-                  <td>{employee.reportTo || 'N/A'}</td>
-                  <td>{employee.division || 'N/A'}</td>
-                  <td>{employee.department || 'N/A'}</td>
-                  <td>{employee.designation || 'N/A'}</td>
-                  <td>{employee.grade || 'N/A'}</td>
-                  <td>{employee.zone || 'N/A'}</td>
-                  <td>{employee.branch || 'N/A'}</td>
-                  <td>{employee.mobile || 'N/A'}</td>
-                  <td>{employee.email || 'N/A'}</td>
-                  <td className="action-cell">
-                    <button 
-                      className="view-profile-btn"
-                      onClick={() => handleSearchClick(employee)}
-                      title="View Profile"
-                    >
-                      <FaSearch />
-                      View
-                    </button>
-                  </td>
+                  <td>{emp.name || 'N/A'}</td>
+                  <td>{emp.reportTo || 'N/A'}</td>
+                  <td>{emp.division || 'N/A'}</td>
+                  <td>{emp.department || 'N/A'}</td>
+                  <td>{emp.designation || 'N/A'}</td>
+                  <td>{emp.grade || 'N/A'}</td>
+                  <td>{emp.zone || 'N/A'}</td>
+                  <td>{emp.branch || 'N/A'}</td>
+                  <td>{emp.mobile || 'N/A'}</td>
+                  <td>{emp.email || 'N/A'}</td>
                 </tr>
               ))
             ) : (
               <tr className="no-data-row">
-                <td colSpan="13">
-                  {mappedEmployees.length === 0 ? 'No employees found' : 'No employees match your search'}
-                </td>
+                <td colSpan={12}>No employees found</td>
               </tr>
             )}
           </tbody>
         </table>
 
-        {totalPages > 1 && (
-          <div className="pagination-controls">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="pagination-btn"
-            >
-              Previous
-            </button>
-            <span className="pagination-info">Page {currentPage} of {totalPages}</span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="pagination-btn"
-            >
-              Next
-            </button>
-          </div>
-        )}
+        {/* Pagination */}
+         {totalPages > 1 && ( 
+        <div className="pagination-controls"> 
+        <button onClick={() => handlePageChange(currentPage - 1)} 
+        disabled={currentPage === 1} 
+        className="pagination-btn" > Previous 
+        </button> 
+        <span className="pagination-info">Page {currentPage} of {totalPages}</span>
+        <button onClick={() => handlePageChange(currentPage + 1)} 
+        disabled={currentPage === totalPages} 
+        className="pagination-btn" > Next </button> 
+        </div> )} 
+        </div> 
       </div>
-    </div>
   );
 };
 
