@@ -148,6 +148,37 @@
 }
 
 /* ------------------------------
+   SCROLLABLE AREA
+--------------------------------*/
+.sidenav-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidenav-scrollable::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidenav-scrollable::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.sidenav-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.sidenav-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sidenav-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+}
+/* ------------------------------
    FOOTER
 --------------------------------*/
 .sidenav-footer {
