@@ -25,16 +25,16 @@ const LeavesManagement = () => {
   useEffect(() => {
     if (currentUser && currentUser.userId) {
       fetchLeaveSummary();
-      fetchLeaveTypes();
+      fetchLeaveTypes(currentUser.userId);
       fetchLeaveApplications();
     }
-  }, [currentUser]);
+  }, []);
 
   const fetchLeaveSummary = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/hr/employee/${currentUser.userId}`, {
+      const response = await fetch(`http://localhost:5000/api/hr/employee-leaves/${currentUser.userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -51,10 +51,11 @@ const LeavesManagement = () => {
     }
   };
 
-  const fetchLeaveTypes = async () => {
+  const fetchLeaveTypes = async (userId) => {
+    if(!userId) return;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/hr/types', {
+      const response = await fetch(`http://localhost:5000/api/hr/types?userId=${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -213,9 +214,9 @@ const LeavesManagement = () => {
             required
           >
             <option value="">Select Leave Type</option>
-            {leaveTypes.map(type => (
-              <option key={type.LeaveId} value={type.LeaveName}>
-                {type.LeaveName} ({type.TotalLeaves} days)
+            {leaveTypes.map((type, index) => (
+              <option key={type.LeaveName + index} value={type.LeaveName}>
+                {type.LeaveName} ({type.Balance} days)
               </option>
             ))}
           </select>
